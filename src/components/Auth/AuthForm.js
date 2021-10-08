@@ -3,6 +3,7 @@ import { useHistory } from "react-router-dom";
 
 import AuthContext from "../../store/auth-context";
 import classes from "./AuthForm.module.css";
+import { API_KEY } from "../../api";
 
 const AuthForm = () => {
   const history = useHistory();
@@ -29,11 +30,9 @@ const AuthForm = () => {
     setIsLoading(true);
     let url;
     if (isLogin) {
-      url =
-        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyAjjC31U4beMv6aiBq6hu0aI6QOq1xNOlE";
+      url = `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY}`;
     } else {
-      url =
-        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyAjjC31U4beMv6aiBq6hu0aI6QOq1xNOlE";
+      url = `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY}`;
     }
     fetch(url, {
       method: "POST",
@@ -53,9 +52,9 @@ const AuthForm = () => {
         } else {
           return res.json().then((data) => {
             let errorMessage = "Authentication failed!";
-            // if (data && data.error && data.error.message) {
-            //   errorMessage = data.error.message;
-            // }
+            if (data && data.error && data.error.message) {
+              errorMessage = data.error.message;
+            }
 
             throw new Error(errorMessage);
           });
@@ -65,7 +64,7 @@ const AuthForm = () => {
         const expirationTime = new Date(
           new Date().getTime() + +data.expiresIn * 1000
         );
-        authCtx.login(data.idToken, expirationTime);
+        authCtx.login(data.idToken, expirationTime, enteredEmail);
         history.replace("/");
       })
       .catch((err) => {
@@ -78,7 +77,7 @@ const AuthForm = () => {
       <h1>{isLogin ? "Login" : "Sign Up"}</h1>
       <form onSubmit={submitHandler}>
         <div className={classes.control}>
-          <label htmlFor="email">Your Email</label>
+          <label htmlFor="email">ID (Your Email)</label>
           <input type="email" id="email" required ref={emailInputRef} />
         </div>
         <div className={classes.control}>
